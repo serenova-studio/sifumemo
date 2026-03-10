@@ -144,7 +144,7 @@ body::after{
 /* OVERLAYS */
 .overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.2);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .18s ease;}
 .overlay.hidden{display:none!important;}
-.sheet{background:rgba(255,255,255,0.30);backdrop-filter:blur(36px);-webkit-backdrop-filter:blur(36px);border:1px solid rgba(255,255,255,0.50);border-radius:26px 26px 0 0;padding:20px 20px 60px;width:100%;max-width:430px;box-shadow:0 -8px 30px rgba(0,0,0,.08);animation:slideUp .28s cubic-bezier(.4,0,.2,1);max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.sheet{background:rgba(255,255,255,0.30);backdrop-filter:blur(36px);-webkit-backdrop-filter:blur(36px);border:1px solid rgba(255,255,255,0.50);border-radius:26px 26px 0 0;padding:20px 20px 100px;width:100%;max-width:430px;box-shadow:0 -8px 30px rgba(0,0,0,.08);animation:slideUp .28s cubic-bezier(.4,0,.2,1);max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .sh-handle{width:36px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 16px;}
 .sh-title{font-size:16px;font-weight:900;color:var(--accent);text-align:center;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
 .close-btn{background:#f0f0f0;border:none;border-radius:50%;width:28px;height:28px;font-size:13px;cursor:pointer;color:#999;display:flex;align-items:center;justify-content:center;}
@@ -293,34 +293,30 @@ body.has-bg-img .bg-blob3,body.has-bg-img::before,body.has-bg-img::after{display
       <button class="close-btn" onclick="closeDay()">✕</button>
     </div>
     <div class="entries-list" id="eList"></div>
-    <div id="flow">
-      <!-- step1 -->
-      <div id="s1">
-        <div class="steps">
-          <span class="step active">① 会社を選ぶ</span>
-          <span class="step-sep">›</span>
-          <span class="step">② シフトを選ぶ</span>
-        </div>
-        <div class="co-sel-grid" id="coSelGrid"></div>
-        <div class="empty-st" id="noCoMsg" style="display:none;"><span class="emo-big">🏢</span>まず「会社・シフト管理」で会社を登録してね</div>
+    <!-- step1: 会社選択 -->
+    <div id="s1">
+      <div class="steps">
+        <span class="step active">① 会社を選ぶ</span>
+        <span class="step-sep">›</span>
+        <span class="step">② シフトを選ぶ</span>
       </div>
-      <!-- step2 -->
-      <div id="s2" style="display:none;">
-        <div class="steps">
-          <span class="step">① 会社</span><span class="step-sep">›</span>
-          <span class="step active">② シフトを選ぶ</span>
-        </div>
-        <span class="back-lnk" onclick="toS1()">‹ 会社を選び直す</span>
-        <div class="sh-sel-grid" id="shSelGrid"></div>
-        <div class="kari-row" onclick="togKari()">
-          <div class="tog-sw" id="kariSw"></div>
-          <span class="tog-lbl">🌙 仮シフト（予定・未確定）</span>
-        </div>
-        <input class="field-in" id="memoIn" type="text" placeholder="📝 メモ（任意）" style="margin-bottom:12px;" />
-        <div style="position:sticky;bottom:0;padding-top:4px;background:transparent;">
-          <button class="main-btn" id="addBtn" onclick="doAdd()">✅ 追加する</button>
-        </div>
+      <div class="co-sel-grid" id="coSelGrid"></div>
+      <div class="empty-st" id="noCoMsg" style="display:none;"><span class="emo-big">🏢</span>まず「会社・シフト管理」で会社を登録してね</div>
+    </div>
+    <!-- step2: シフト選択 -->
+    <div id="s2" style="display:none;">
+      <div class="steps">
+        <span class="step">① 会社</span><span class="step-sep">›</span>
+        <span class="step active">② シフトを選ぶ</span>
       </div>
+      <span class="back-lnk" id="backLnk">‹ 会社を選び直す</span>
+      <div class="sh-sel-grid" id="shSelGrid"></div>
+      <div class="kari-row" id="kariRow">
+        <div class="tog-sw" id="kariSw"></div>
+        <span class="tog-lbl">🌙 仮シフト（予定・未確定）</span>
+      </div>
+      <input class="field-in" id="memoIn" type="text" placeholder="📝 メモ（任意）" style="margin-bottom:12px;" />
+      <button class="main-btn" id="addBtn" style="margin-top:4px;">✅ 追加する</button>
     </div>
   </div>
 </div>
@@ -493,91 +489,105 @@ function rCal(){
 
 // DAY SHEET
 function openDay(d){
-  selDay=d;kariMode=false;selCoId=null;selStId=null;
+  selDay=d; kariMode=false; selCoId=null; selStId=null;
   const mn=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
   const dw=['日','月','火','水','木','金','土'];
   document.getElementById('dayTtl').textContent=`${mn[curM]}${d}日 (${dw[new Date(curY,curM,d).getDay()]})`;
-  rEntries();toS1();
   document.getElementById('memoIn').value='';
+  document.getElementById('kariSw').className='tog-sw';
+  rEntries();
+  toS1();
   document.getElementById('dayOv').classList.remove('hidden');
 }
-function closeDay(){document.getElementById('dayOv').classList.add('hidden');selDay=null;}
+function closeDay(){document.getElementById('dayOv').classList.add('hidden'); selDay=null;}
 
 function rEntries(){
-  const key=dkey(curY,curM,selDay),ents=S.cal[key]||[];
+  const key=dkey(curY,curM,selDay), ents=S.cal[key]||[];
   const el=document.getElementById('eList');
-  if(!ents.length){el.innerHTML='';return;}
-  el.innerHTML=ents.map((e,i)=>{
-    const co=S.companies.find(c=>c.id===e.companyId),st=co?.shifts.find(s=>s.id===e.shiftId);
-    if(!co||!st)return'';
-    return`<div class="entry-item ${e.kari?'ek':''}">
-      <div class="e-clr" style="background:${co.color}"></div>
+  el.innerHTML='';
+  ents.forEach((e,i)=>{
+    const co=S.companies.find(c=>c.id===e.companyId), st=co?.shifts.find(s=>s.id===e.shiftId);
+    if(!co||!st)return;
+    const div=document.createElement('div');
+    div.className='entry-item'+(e.kari?' ek':'');
+    div.innerHTML=`<div class="e-clr" style="background:${co.color}"></div>
       <div class="e-info">
         <div class="e-co">${co.name}</div>
         <div class="e-sh">${st.name}${e.kari?'<span class="e-kb">仮</span>':''}</div>
         ${e.memo?`<div style="font-size:10px;color:var(--subtext)">${e.memo}</div>`:''}
       </div>
       <div class="e-am">¥${Number(e.amount).toLocaleString()}</div>
-      <button class="e-del" onclick="delEnt(${i})">×</button>
-    </div>`;
-  }).join('');
+      <button class="e-del">×</button>`;
+    div.querySelector('.e-del').addEventListener('click', ()=>delEnt(i));
+    el.appendChild(div);
+  });
 }
 
 function delEnt(i){
   const key=dkey(curY,curM,selDay);
   S.cal[key].splice(i,1);
   if(!S.cal[key].length)delete S.cal[key];
-  sv();rEntries();rCal();rStats();
+  sv(); rEntries(); rCal(); rStats();
 }
 
 function toS1(){
-  document.getElementById('s1').style.display='';document.getElementById('s2').style.display='none';
-  const grid=document.getElementById('coSelGrid'),msg=document.getElementById('noCoMsg');
-  if(!S.companies.length){grid.innerHTML='';msg.style.display='';return;}
+  selCoId=null; selStId=null;
+  document.getElementById('s1').style.display='';
+  document.getElementById('s2').style.display='none';
+  const grid=document.getElementById('coSelGrid');
+  const msg=document.getElementById('noCoMsg');
+  grid.innerHTML='';
+  if(!S.companies.length){msg.style.display='';return;}
   msg.style.display='none';
-  grid.innerHTML=S.companies.map(co=>
-    `<button class="co-sel-btn" onclick="selCo('${co.id}')"><div class="csd" style="background:${co.color}"></div><span class="csn">${co.name}</span></button>`
-  ).join('');
+  S.companies.forEach(co=>{
+    const btn=document.createElement('button');
+    btn.className='co-sel-btn';
+    btn.innerHTML=`<div class="csd" style="background:${co.color}"></div><span class="csn">${co.name}</span>`;
+    btn.addEventListener('click', ()=>selCo(co.id));
+    grid.appendChild(btn);
+  });
 }
 
 function selCo(id){
-  selCoId=id;selStId=null;
-  const co=S.companies.find(c=>c.id===id);if(!co)return;
-  const grid=document.getElementById('shSelGrid');
-  if(!co.shifts.length){
-    grid.innerHTML=`<div style="grid-column:span 2;text-align:center;font-size:12px;color:var(--subtext);padding:10px;">シフトがまだ登録されていません</div>`;
-  } else {
-    grid.innerHTML=co.shifts.map((st,i)=>
-      `<button class="sh-sel-btn" data-stid="${st.id}" onclick="selSt(this,'${st.id}')">
-        <div class="ssb-top"><span class="ssb-nm">${st.name}</span></div>
-        <div class="ssb-am">¥${Number(st.amount).toLocaleString()}</div>
-      </button>`
-    ).join('');
-  }
-  document.getElementById('kariSw').className='tog-sw';kariMode=false;
+  selCoId=id; selStId=null;
+  const co=S.companies.find(c=>c.id===id); if(!co)return;
   document.getElementById('s1').style.display='none';
   document.getElementById('s2').style.display='';
+  document.getElementById('kariSw').className='tog-sw'; kariMode=false;
+  const grid=document.getElementById('shSelGrid');
+  grid.innerHTML='';
+  if(!co.shifts.length){
+    const msg=document.createElement('div');
+    msg.style.cssText='grid-column:span 2;text-align:center;font-size:12px;color:var(--subtext);padding:10px;';
+    msg.textContent='シフトがまだ登録されていません';
+    grid.appendChild(msg);
+  } else {
+    co.shifts.forEach(st=>{
+      const btn=document.createElement('button');
+      btn.className='sh-sel-btn';
+      btn.innerHTML=`<div class="ssb-top"><span class="ssb-nm">${st.name}</span></div><div class="ssb-am">¥${Number(st.amount).toLocaleString()}</div>`;
+      btn.addEventListener('click', ()=>{
+        selStId=st.id;
+        grid.querySelectorAll('.sh-sel-btn').forEach(b=>b.classList.remove('sel'));
+        btn.classList.add('sel');
+      });
+      grid.appendChild(btn);
+    });
+  }
 }
 
-function selSt(el,id){
-  selStId=id;
-  document.querySelectorAll('.sh-sel-btn').forEach(b=>b.classList.remove('sel'));
-  el.classList.add('sel');
-}
-
-function togKari(){kariMode=!kariMode;document.getElementById('kariSw').className='tog-sw'+(kariMode?' on':'');}
+function togKari(){kariMode=!kariMode; document.getElementById('kariSw').className='tog-sw'+(kariMode?' on':'');}
 
 function doAdd(){
-  if(!selCoId||!selStId){
-    alert('シフトを選んでください');return;
-  }
-  const co=S.companies.find(c=>c.id===selCoId),st=co?.shifts.find(s=>s.id===selStId);
+  if(!selCoId){alert('会社を選んでください');return;}
+  if(!selStId){alert('シフトを選んでください');return;}
+  const co=S.companies.find(c=>c.id===selCoId), st=co?.shifts.find(s=>s.id===selStId);
   if(!co||!st)return;
   const key=dkey(curY,curM,selDay);
   if(!S.cal[key])S.cal[key]=[];
   S.cal[key].push({companyId:co.id,shiftId:st.id,kari:kariMode,memo:document.getElementById('memoIn').value.trim(),amount:st.amount});
-  sv();rEntries();rCal();rStats();
-  selCoId=null;selStId=null;kariMode=false;
+  sv(); rEntries(); rCal(); rStats();
+  selCoId=null; selStId=null; kariMode=false;
   document.getElementById('memoIn').value='';
   toS1();
 }
@@ -745,6 +755,11 @@ function loadBgImg(){
     if(saved){S.bgImg=true;applyBgImg(saved);}
   }catch(e){}
 }
+
+// 静的ボタンのイベント登録
+document.getElementById('addBtn').addEventListener('click', doAdd);
+document.getElementById('kariRow').addEventListener('click', togKari);
+document.getElementById('backLnk').addEventListener('click', toS1);
 
 // BG close
 ['dayOv','coOv','stOv'].forEach(id=>{
