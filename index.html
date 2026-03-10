@@ -9,8 +9,8 @@
 :root {
   --bg1:#b2ede6;--bg2:#d8f5f0;--bg3:#e8faf7;
   --main:#9EDFD6;--accent:#7BC6BE;--accent2:#5aafa6;
-  --text:#3A3A3A;--subtext:#6a9e99;--card:rgba(255,255,255,0.18);
-  --card-border:rgba(255,255,255,0.45);--card-blur:blur(28px);
+  --text:#3A3A3A;--subtext:#6a9e99;--card:rgba(255,255,255,0.08);
+  --card-border:rgba(255,255,255,0.25);--card-blur:blur(6px);
   --shadow:rgba(126,198,190,0.25);--shadow2:rgba(126,198,190,0.15);
   --kari-bg:rgba(158,223,214,0.22);--kari-border:#9EDFD6;
   --confirm-bg:rgba(123,198,190,0.22);--sun:#FF7F8A;--sat:#7BC6BE;--danger:#ff8c94;
@@ -19,8 +19,8 @@
 .theme-blue{
   --bg1:#a8c8ff;--bg2:#cfe0ff;--bg3:#e8f0ff;
   --main:#BFD7FF;--accent:#8FB6FF;--accent2:#6b9fff;
-  --text:#2F3440;--subtext:#6a82b0;--card:rgba(255,255,255,0.18);
-  --card-border:rgba(255,255,255,0.45);--card-blur:blur(28px);
+  --text:#2F3440;--subtext:#6a82b0;--card:rgba(255,255,255,0.08);
+  --card-border:rgba(255,255,255,0.25);--card-blur:blur(6px);
   --shadow:rgba(143,182,255,0.25);--shadow2:rgba(143,182,255,0.15);
   --kari-bg:rgba(191,215,255,0.25);--kari-border:#BFD7FF;
   --confirm-bg:rgba(143,182,255,0.22);--sun:#FF7F8A;--sat:#8FB6FF;
@@ -29,8 +29,8 @@
 .theme-peach{
   --bg1:#ffb3b8;--bg2:#ffd6d8;--bg3:#fff0f2;
   --main:#FFB7B2;--accent:#FF8C94;--accent2:#ff6b76;
-  --text:#3D3D3D;--subtext:#b07070;--card:rgba(255,255,255,0.18);
-  --card-border:rgba(255,255,255,0.45);--card-blur:blur(28px);
+  --text:#3D3D3D;--subtext:#b07070;--card:rgba(255,255,255,0.08);
+  --card-border:rgba(255,255,255,0.25);--card-blur:blur(6px);
   --shadow:rgba(255,140,148,0.25);--shadow2:rgba(255,140,148,0.15);
   --kari-bg:rgba(255,183,178,0.22);--kari-border:#FFB7B2;
   --confirm-bg:rgba(255,140,148,0.18);--sun:#FF7F8A;--sat:#FFB7B2;
@@ -104,7 +104,7 @@ body::after{width:240px;height:240px;bottom:80px;left:-70px;background:radial-gr
 
 .overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.2);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .18s ease;}
 .overlay.hidden{display:none!important;}
-.sheet{background:rgba(255,255,255,0.30);backdrop-filter:blur(36px);-webkit-backdrop-filter:blur(36px);border:1px solid rgba(255,255,255,0.50);border-radius:26px 26px 0 0;padding:20px 20px 100px;width:100%;max-width:430px;box-shadow:0 -8px 30px rgba(0,0,0,.08);animation:slideUp .28s cubic-bezier(.4,0,.2,1);max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.sheet{background:rgba(255,255,255,0.12);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.28);border-radius:26px 26px 0 0;padding:20px 20px 100px;width:100%;max-width:430px;box-shadow:0 -8px 30px rgba(0,0,0,.08);animation:slideUp .28s cubic-bezier(.4,0,.2,1);max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .sh-handle{width:36px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 16px;}
 .sh-title{font-size:16px;font-weight:900;color:var(--accent);text-align:center;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
 .close-btn{background:#f0f0f0;border:none;border-radius:50%;width:28px;height:28px;font-size:13px;cursor:pointer;color:#999;}
@@ -161,10 +161,10 @@ body::after{width:240px;height:240px;bottom:80px;left:-70px;background:radial-gr
 
 .c-overlay{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.2);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;animation:fadeIn .18s ease;padding:20px;}
 .c-overlay.hidden{display:none!important;}
-.modal{background:rgba(255,255,255,0.30);backdrop-filter:blur(36px);-webkit-backdrop-filter:blur(36px);border:1px solid rgba(255,255,255,0.50);border-radius:24px;padding:24px 22px;width:100%;max-width:320px;box-shadow:0 12px 40px rgba(0,0,0,.10);animation:popIn .25s cubic-bezier(.4,0,.2,1);}
+.modal{background:rgba(255,255,255,0.12);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.28);border-radius:24px;padding:24px 22px;width:100%;max-width:320px;box-shadow:0 12px 40px rgba(0,0,0,.10);animation:popIn .25s cubic-bezier(.4,0,.2,1);}
 .modal-ttl{font-size:16px;font-weight:900;color:var(--accent);text-align:center;margin-bottom:16px;}
 
-.bottom-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(255,255,255,0.18);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border-top:1px solid rgba(255,255,255,0.45);padding:8px 20px 18px;display:flex;align-items:center;justify-content:center;gap:10px;z-index:100;}
+.bottom-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(255,255,255,0.08);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-top:1px solid rgba(255,255,255,0.25);padding:8px 20px 18px;display:flex;align-items:center;justify-content:center;gap:10px;z-index:100;}
 .th-btn{width:28px;height:28px;border-radius:50%;border:3px solid transparent;cursor:pointer;transition:all .2s;}
 .th-btn.active{border-color:var(--accent);transform:scale(1.18);}
 .th-btn.t1{background:#3CBFB4;}.th-btn.t2{background:#5B9BFF;}.th-btn.t3{background:#FF6B7A;}
@@ -320,6 +320,42 @@ body.has-bg-img .bg-blob3,body.has-bg-img::before,body.has-bg-img::after{display
       <input class="field-in" id="patIn" type="number" placeholder="例: 8500" inputmode="numeric" style="margin-bottom:0;flex:1;">
       <button class="sub-btn" id="addPatBtn" style="width:auto;padding:0 18px;height:44px;white-space:nowrap;flex-shrink:0;">＋ 追加</button>
     </div>
+    <!-- 時給計算 -->
+    <div class="hourly-toggle" id="coHourlyToggle">🧮 時給から計算して追加</div>
+    <div id="coHourlyArea" style="display:none;background:rgba(255,255,255,0.2);border-radius:14px;padding:12px 14px;margin-bottom:12px;border:1.5px solid rgba(255,255,255,0.4);">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div>
+          <div class="lbl-sm" style="margin-bottom:4px;">時給 (円)</div>
+          <input class="field-in" id="coWageIn" type="number" placeholder="1000" inputmode="numeric" style="margin-bottom:0;">
+        </div>
+        <div>
+          <div class="lbl-sm" style="margin-bottom:4px;">勤務時間</div>
+          <div style="display:flex;gap:4px;align-items:center;">
+            <select class="field-in" id="coWorkH" style="margin-bottom:0;flex:1;text-align:center;"></select>
+            <span style="font-size:11px;font-weight:700;color:var(--subtext);flex-shrink:0;">h</span>
+            <select class="field-in" id="coWorkM" style="margin-bottom:0;flex:1;text-align:center;"></select>
+            <span style="font-size:11px;font-weight:700;color:var(--subtext);flex-shrink:0;">m</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+        <div>
+          <div class="lbl-sm" style="margin-bottom:4px;">深夜割増 (倍)</div>
+          <input class="field-in" id="coNightRate" type="number" placeholder="1.25" step="0.05" inputmode="decimal" style="margin-bottom:0;">
+        </div>
+        <div>
+          <div class="lbl-sm" style="margin-bottom:4px;">深夜時間</div>
+          <div style="display:flex;gap:4px;align-items:center;">
+            <select class="field-in" id="coNightH" style="margin-bottom:0;flex:1;text-align:center;"></select>
+            <span style="font-size:11px;font-weight:700;color:var(--subtext);flex-shrink:0;">h</span>
+            <select class="field-in" id="coNightM" style="margin-bottom:0;flex:1;text-align:center;"></select>
+            <span style="font-size:11px;font-weight:700;color:var(--subtext);flex-shrink:0;">m</span>
+          </div>
+        </div>
+      </div>
+      <button class="sub-btn" id="coCalcBtn" style="font-size:13px;padding:10px;">計算してパターンに追加</button>
+      <div id="coCalcResult" style="text-align:center;font-size:13px;font-weight:700;color:var(--accent);margin-top:8px;"></div>
+    </div>
     <div id="patList" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;min-height:10px;"></div>
     <button class="sub-btn" id="saveCoBtn">保存する</button>
     <button class="del-btn" id="delCoBtn" style="display:none;">🗑️ このバイト先を削除</button>
@@ -431,6 +467,23 @@ function bindEvents(){
   document.getElementById('delCoBtn').addEventListener('click',delCo);
   document.getElementById('addPatBtn').addEventListener('click',addPat);
   document.getElementById('patIn').addEventListener('keydown',e=>{if(e.key==='Enter')addPat();});
+  document.getElementById('coHourlyToggle').addEventListener('click',()=>{
+    const area=document.getElementById('coHourlyArea');
+    const open=area.style.display==='none';
+    area.style.display=open?'':'none';
+    document.getElementById('coHourlyToggle').textContent=open?'🧮 時給計算を閉じる':'🧮 時給から計算して追加';
+  });
+  document.getElementById('coCalcBtn').addEventListener('click',calcAndAddPat);
+  // 時間セレクト生成（会社フォーム用）
+  ['coWorkH','coNightH'].forEach(id=>{
+    const el=document.getElementById(id);
+    for(let i=0;i<=24;i++)el.innerHTML+=`<option value="${i}">${i}</option>`;
+  });
+  ['coWorkM','coNightM'].forEach(id=>{
+    const el=document.getElementById(id);
+    for(let i=0;i<60;i+=5)el.innerHTML+=`<option value="${i}">${String(i).padStart(2,'0')}</option>`;
+  });
+  document.getElementById('coWorkH').value=8;
   document.getElementById('openBgBtn').addEventListener('click',openBgMenu);
   document.getElementById('bgPickBtn').addEventListener('click',()=>{document.getElementById('bgFileIn').click();closeBgMenu();});
   document.getElementById('bgDelBtn').addEventListener('click',()=>{removeBgImg();closeBgMenu();});
@@ -623,6 +676,11 @@ function openCoForm(coId){
   selClr=co?co.color:COLORS[3];
   editPatterns=co?(co.patterns||[]).slice():[];
   document.getElementById('patIn').value='';
+  document.getElementById('coHourlyArea').style.display='none';
+  document.getElementById('coHourlyToggle').textContent='🧮 時給から計算して追加';
+  document.getElementById('coCalcResult').textContent='';
+  document.getElementById('coWorkH').value=8;
+  document.getElementById('coNightH').value=0;
   document.getElementById('delCoBtn').style.display=co?'block':'none';
   const cp=document.getElementById('clrPick');cp.innerHTML='';
   COLORS.forEach(c=>{
@@ -645,6 +703,21 @@ function rPatList(){
     span.querySelector('.del-x').addEventListener('click',()=>{editPatterns.splice(i,1);rPatList();});
     el.appendChild(span);
   });
+}
+
+function calcAndAddPat(){
+  const wage=parseFloat(document.getElementById('coWageIn').value)||0;
+  const wh=parseFloat(document.getElementById('coWorkH').value)||0;
+  const wm=parseFloat(document.getElementById('coWorkM').value)||0;
+  const nh=parseFloat(document.getElementById('coNightH').value)||0;
+  const nm=parseFloat(document.getElementById('coNightM').value)||0;
+  const nr=parseFloat(document.getElementById('coNightRate').value)||1;
+  const totalH=wh+wm/60, nightH=nh+nm/60;
+  const total=Math.round(wage*Math.max(0,totalH-nightH)+wage*nr*nightH);
+  if(!wage||!totalH){document.getElementById('coCalcResult').textContent='時給と勤務時間を入力してください';return;}
+  if(!editPatterns.includes(total))editPatterns.push(total);
+  rPatList();
+  document.getElementById('coCalcResult').textContent=`¥${total.toLocaleString()} をパターンに追加しました！`;
 }
 
 function addPat(){
