@@ -82,6 +82,8 @@ body::after{width:240px;height:240px;bottom:80px;left:-70px;background:radial-gr
 .cal-day:not(.empty):not(.has-c):not(.has-k):not(.has-ck):hover{background:var(--kari-bg);}
 .day-num{font-size:11px;font-weight:800;line-height:1;margin-bottom:1px;align-self:flex-start;margin-left:3px;}
 .col-sun .day-num{color:var(--sun);}.col-sat .day-num{color:var(--sat);}
+.col-hol .day-num{color:var(--sun);}
+.hol-badge{font-size:6px;font-weight:800;color:var(--sun);line-height:1;text-align:center;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:1px;}
 .day-chips{display:flex;flex-direction:column;align-items:center;gap:1px;width:100%;}
 .day-chip{width:100%;text-align:center;}
 .chip-co{font-size:7px;font-weight:700;color:var(--subtext);line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
@@ -457,6 +459,26 @@ function sv(){try{localStorage.setItem(SK,JSON.stringify(S));}catch(e){}}
 function uid(){return Math.random().toString(36).slice(2,10);}
 function dkey(y,m,d){return`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
 
+// 祝日判定（m=0-11）
+function getHolidays(y,m){
+  const hols={};
+  const fixed={'1-1':'元日','2-11':'建国記念日','2-23':'天皇誕生日','4-29':'昭和の日','5-3':'憲法記念日','5-4':'みどりの日','5-5':'こどもの日','8-11':'山の日','11-3':'文化の日','11-23':'勤労感謝の日'};
+  Object.entries(fixed).forEach(([key,name])=>{const[fm,fd]=key.split('-').map(Number);if(fm===m+1)hols[fd]=name;});
+  if(m===2)hols[Math.floor(20.8431+0.242194*(y-1980)-Math.floor((y-1980)/4))]='春分の日';
+  if(m===8)hols[Math.floor(23.2488+0.242194*(y-1980)-Math.floor((y-1980)/4))]='秋分の日';
+  [[1,2,'成人の日'],[7,3,'海の日'],[9,3,'敬老の日'],[10,2,'スポーツの日']].forEach(([hm,week,name])=>{
+    if(hm!==m+1)return;
+    let cnt=0;
+    for(let d=1;d<=31;d++){const dt=new Date(y,m,d);if(dt.getMonth()!==m)break;if(dt.getDay()===1&&++cnt===week){hols[d]=name;break;}}
+  });
+  // 振替休日
+  const days=new Date(y,m+1,0).getDate();
+  for(let d=1;d<=days;d++){
+    if(new Date(y,m,d).getDay()===0&&hols[d]){let nd=d+1;while(hols[nd])nd++;if(nd<=days)hols[nd]='振替休日';}
+  }
+  return hols;
+}
+
 function init(){
   ld();
   const n=new Date();curY=n.getFullYear();curM=n.getMonth();
@@ -575,16 +597,20 @@ function rStats(){
 function rCal(){
   const w=document.getElementById('calDays');w.innerHTML='';
   const first=new Date(curY,curM,1).getDay(),days=new Date(curY,curM+1,0).getDate(),td=new Date();
+  const hols=getHolidays(curY,curM);
   for(let i=0;i<first;i++){const e=document.createElement('div');e.className='cal-day empty';w.appendChild(e);}
   for(let d=1;d<=days;d++){
     const col=(first+d-1)%7,key=dkey(curY,curM,d),ents=S.cal[key]||[];
     const isT=td.getFullYear()===curY&&td.getMonth()===curM&&td.getDate()===d;
     const hc=ents.some(e=>!e.kari),hk=ents.some(e=>e.kari);
+    const isHol=hols[d]&&col!==0&&col!==6; // 日曜・土曜以外の祝日
     const el=document.createElement('div');
-    let cls=`cal-day ${col===0?'col-sun':col===6?'col-sat':'col-wd'}`;
+    let cls=`cal-day ${col===0||isHol?'col-sun':col===6?'col-sat':'col-wd'}`;
     if(isT)cls+=' today';else if(hc&&hk)cls+=' has-ck';else if(hc)cls+=' has-c';else if(hk)cls+=' has-k';
     el.className=cls;
-    let html=`<span class="day-num">${d}</span><div class="day-chips">`;
+    let html=`<span class="day-num">${d}</span>`;
+    if(hols[d])html+=`<span class="hol-badge">${hols[d]}</span>`;
+    html+=`<div class="day-chips">`;
     ents.slice(0,2).forEach(e=>{
       const co=S.companies.find(c=>c.id===e.companyId);
       if(!co)return;
@@ -594,15 +620,7 @@ function rCal(){
     html+=`</div>`;
     if(hk)html+=`<div class="kari-dot"></div>`;
     el.innerHTML=html;
-    el.addEventListener('click',()=>{
-      if(multiSelMode){
-        if(multiSelDays.has(d)){multiSelDays.delete(d);el.classList.remove('multi-sel');}
-        else{multiSelDays.add(d);el.classList.add('multi-sel');}
-        document.getElementById('multiSelCount').textContent=`${multiSelDays.size}日選択中`;
-      }else{
-        openDay(d);
-      }
-    });
+    el.addEventListener('click',()=>openDay(d));
     w.appendChild(el);
   }
 }
@@ -636,17 +654,21 @@ function doMultiDel(){
 function rCalMulti(){
   const w=document.getElementById('calDaysMulti');w.innerHTML='';
   const first=new Date(curY,curM,1).getDay(),days=new Date(curY,curM+1,0).getDate(),td=new Date();
+  const hols=getHolidays(curY,curM);
   for(let i=0;i<first;i++){const e=document.createElement('div');e.className='cal-day empty';w.appendChild(e);}
   for(let d=1;d<=days;d++){
     const col=(first+d-1)%7,key=dkey(curY,curM,d),ents=S.cal[key]||[];
     const isT=td.getFullYear()===curY&&td.getMonth()===curM&&td.getDate()===d;
     const hc=ents.some(e=>!e.kari),hk=ents.some(e=>e.kari);
+    const isHol=hols[d]&&col!==0&&col!==6;
     const el=document.createElement('div');
-    let cls=`cal-day ${col===0?'col-sun':col===6?'col-sat':'col-wd'}`;
+    let cls=`cal-day ${col===0||isHol?'col-sun':col===6?'col-sat':'col-wd'}`;
     if(isT)cls+=' today';else if(hc&&hk)cls+=' has-ck';else if(hc)cls+=' has-c';else if(hk)cls+=' has-k';
     if(multiSelDays.has(d))cls+=' multi-sel';
     el.className=cls;
-    let html=`<span class="day-num">${d}</span><div class="day-chips">`;
+    let html=`<span class="day-num">${d}</span>`;
+    if(hols[d])html+=`<span class="hol-badge">${hols[d]}</span>`;
+    html+=`<div class="day-chips">`;
     ents.slice(0,2).forEach(e=>{
       const co=S.companies.find(c=>c.id===e.companyId);
       if(!co)return;
