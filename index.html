@@ -190,7 +190,8 @@ body.has-bg-img .bg-blob3,body.has-bg-img::before,body.has-bg-img::after{display
 .cal-white .day-num,.cal-white .cal-dow span{color:white!important;}
 .cal-white .chip-co{color:rgba(255,255,255,0.85)!important;}
 .cal-white .chip-am{color:white!important;}
-.cal-day.multi-sel{outline:2.5px solid var(--accent);outline-offset:-2px;background:var(--confirm-bg)!important;}
+.cal-day.closing-line{border-bottom:2px solid var(--accent);}
+.closing-line-row{grid-column:1/-1;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);border-radius:2px;margin:1px 0;}
 </style>
 </head>
 <body>
@@ -211,6 +212,17 @@ body.has-bg-img .bg-blob3,body.has-bg-img::before,body.has-bg-img::after{display
       <div class="stat-item"><div class="stat-lbl">仮含む合計</div><div class="stat-val" id="sK">¥0</div></div>
       <div class="stat-div"></div>
       <div class="stat-item"><div class="stat-lbl">年間累計</div><div class="stat-val" id="sY">¥0</div></div>
+    </div>
+    <!-- 締日エリア -->
+    <div id="closingRow" style="display:none;background:rgba(255,255,255,0.15);border-radius:10px;padding:7px 12px;margin-bottom:8px;align-items:center;justify-content:space-between;cursor:pointer;" id="closingRow">
+      <div>
+        <div style="font-size:10px;font-weight:800;color:var(--subtext);" id="closingLbl">締め期間</div>
+        <div style="font-size:14px;font-weight:900;color:var(--accent);" id="sC">¥0</div>
+      </div>
+      <div style="font-size:10px;font-weight:700;color:var(--subtext);">タップして変更 ›</div>
+    </div>
+    <div id="closingSetRow" style="display:flex;align-items:center;justify-content:center;margin-bottom:8px;">
+      <button id="openClosingBtn" style="background:none;border:none;font-family:inherit;font-size:11px;font-weight:800;color:var(--subtext);cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;">＋ 締日を設定する</button>
     </div>
     <div class="goal-row">
       <div class="goal-prog"><div class="goal-fill" id="gFill" style="width:0%"></div></div>
@@ -415,6 +427,19 @@ body.has-bg-img .bg-blob3,body.has-bg-img::before,body.has-bg-img::after{display
   </div>
 </div>
 
+<!-- 締日モーダル -->
+<div class="c-overlay hidden" id="closingOv">
+  <div class="modal">
+    <div class="modal-ttl">📅 締日設定</div>
+    <div style="font-size:12px;color:var(--subtext);font-weight:700;text-align:center;margin-bottom:12px;">毎月何日締めですか？</div>
+    <div id="closingDayGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px;"></div>
+    <div style="display:flex;gap:8px;">
+      <button id="closingOffBtn" style="flex:1;background:none;border:1.5px solid #ccc;border-radius:12px;padding:10px;font-family:inherit;font-size:12px;font-weight:800;color:#aaa;cursor:pointer;">設定しない</button>
+      <button id="saveClosingBtn" class="sub-btn" style="flex:2;">設定する</button>
+    </div>
+  </div>
+</div>
+
 <!-- GOAL MODAL -->
 <div class="c-overlay hidden" id="goalOv">
   <div class="modal">
@@ -449,6 +474,7 @@ function ld(){
   if(!S.cal)S.cal={};
   if(!S.goals)S.goals={};
   if(!S.calColor)S.calColor='default';
+  if(!S.closingDay)S.closingDay=0; // 0=設定なし
   // 旧データ移行
   S.companies.forEach(co=>{
     if(!co.patterns)co.patterns=(co.shifts||[]).map(s=>s.amount).filter(a=>a>0);
@@ -555,7 +581,11 @@ function bindEvents(){
     for(let i=0;i<60;i+=5)el.innerHTML+=`<option value="${i}">${String(i).padStart(2,'0')}</option>`;
   });
   document.getElementById('coWorkH').value=8;
-  document.getElementById('openBgBtn').addEventListener('click',openBgMenu);
+  document.getElementById('openClosingBtn').addEventListener('click',openClosing);
+  document.getElementById('closingRow').addEventListener('click',openClosing);
+  document.getElementById('saveClosingBtn').addEventListener('click',saveClosing);
+  document.getElementById('closingOffBtn').addEventListener('click',()=>{S.closingDay=0;sv();closeClosing();rStats();rCal();rCalMulti();});
+  document.getElementById('closingOv').addEventListener('click',e=>{if(e.target===document.getElementById('closingOv'))closeClosing();});
   document.getElementById('bgPickBtn').addEventListener('click',()=>{document.getElementById('bgFileIn').click();closeBgMenu();});
   document.getElementById('bgDelBtn').addEventListener('click',()=>{removeBgImg();closeBgMenu();});
   document.getElementById('bgCancelBtn').addEventListener('click',closeBgMenu);
@@ -592,6 +622,20 @@ function rStats(){
     document.getElementById('gFill').style.width=pct+'%';
     document.getElementById('gTxt').textContent=rem===0?'🎉 達成！':`あと¥${rem.toLocaleString()}`;}
   else{document.getElementById('gFill').style.width='0%';document.getElementById('gTxt').textContent='目標未設定';}
+  // 締日合計
+  const cr=closingTotal();
+  const crow=document.getElementById('closingRow');
+  const csetrow=document.getElementById('closingSetRow');
+  if(cr){
+    const mn=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+    document.getElementById('closingLbl').textContent=`${mn[cr.startM]}${cr.start}日〜${mn[curM]}${S.closingDay===31?'末日':`${cr.end}日`}締め`;
+    document.getElementById('sC').textContent='¥'+cr.total.toLocaleString();
+    crow.style.display='flex';
+    csetrow.style.display='none';
+  }else{
+    crow.style.display='none';
+    csetrow.style.display='flex';
+  }
 }
 
 function rCal(){
@@ -622,6 +666,14 @@ function rCal(){
     el.innerHTML=html;
     el.addEventListener('click',()=>openDay(d));
     w.appendChild(el);
+    // 締日の後に区切り線を挿入
+    const cd=S.closingDay||0;
+    const actualCD=cd===31?new Date(curY,curM+1,0).getDate():cd;
+    if(cd&&d===actualCD){
+      const line=document.createElement('div');
+      line.className='closing-line-row';
+      w.appendChild(line);
+    }
   }
 }
 
@@ -694,6 +746,13 @@ function rCalMulti(){
       updateMultiCount();
     });
     w.appendChild(el);
+    const cd=S.closingDay||0;
+    const actualCD=cd===31?new Date(curY,curM+1,0).getDate():cd;
+    if(cd&&d===actualCD){
+      const line=document.createElement('div');
+      line.className='closing-line-row';
+      w.appendChild(line);
+    }
   }
 }
 function enterMultiSel(){}
@@ -969,7 +1028,67 @@ function saveCalcToPattern(){
   document.getElementById('savePatBtn').style.color='var(--accent2)';
 }
 
-// GOAL
+// 締日
+let selClosingDay=0;
+function openClosing(){
+  selClosingDay=S.closingDay||0;
+  const grid=document.getElementById('closingDayGrid');
+  grid.innerHTML='';
+  // 末日オプション
+  ['末日',1,5,10,15,20,25].forEach(v=>{
+    const d=v==='末日'?31:v;
+    const btn=document.createElement('button');
+    btn.style.cssText=`background:${d===selClosingDay?'var(--main)':'rgba(255,255,255,0.25)'};border:1.5px solid ${d===selClosingDay?'var(--accent)':'rgba(255,255,255,0.4)'};border-radius:10px;padding:8px 4px;font-family:inherit;font-size:12px;font-weight:800;color:var(--text);cursor:pointer;`;
+    btn.textContent=v==='末日'?'末日':`${v}日`;
+    btn.addEventListener('click',()=>{
+      selClosingDay=d;
+      grid.querySelectorAll('button').forEach(b=>{b.style.background='rgba(255,255,255,0.25)';b.style.borderColor='rgba(255,255,255,0.4)';});
+      btn.style.background='var(--main)';btn.style.borderColor='var(--accent)';
+    });
+    grid.appendChild(btn);
+  });
+  // 1〜末日の全日
+  for(let i=1;i<=31;i++){
+    if([1,5,10,15,20,25].includes(i))continue; // 上で追加済み
+    const btn=document.createElement('button');
+    btn.style.cssText=`background:${i===selClosingDay?'var(--main)':'rgba(255,255,255,0.25)'};border:1.5px solid ${i===selClosingDay?'var(--accent)':'rgba(255,255,255,0.4)'};border-radius:10px;padding:8px 4px;font-family:inherit;font-size:12px;font-weight:800;color:var(--text);cursor:pointer;`;
+    btn.textContent=`${i}日`;
+    btn.addEventListener('click',()=>{
+      selClosingDay=i;
+      grid.querySelectorAll('button').forEach(b=>{b.style.background='rgba(255,255,255,0.25)';b.style.borderColor='rgba(255,255,255,0.4)';});
+      btn.style.background='var(--main)';btn.style.borderColor='var(--accent)';
+    });
+    grid.appendChild(btn);
+  }
+  document.getElementById('closingOv').classList.remove('hidden');
+}
+function closeClosing(){document.getElementById('closingOv').classList.add('hidden');}
+function saveClosing(){
+  S.closingDay=selClosingDay;sv();closeClosing();rStats();rCal();rCalMulti();
+}
+
+// 締日期間の合計計算
+function closingTotal(){
+  const cd=S.closingDay||0;if(!cd)return null;
+  // 締日+1 〜 今月の締日 の期間
+  const lastDay=cd===31?new Date(curY,curM+1,0).getDate():cd;
+  let t=0;
+  // 前月の締日+1〜末日
+  const prevM=curM===0?11:curM-1;
+  const prevY=curM===0?curY-1:curY;
+  const prevDays=new Date(prevY,prevM+1,0).getDate();
+  const startDay=cd===31?0:cd; // 前月締日
+  for(let d=startDay+1;d<=prevDays;d++){
+    const key=dkey(prevY,prevM,d);
+    (S.cal[key]||[]).forEach(e=>{if(!e.kari)t+=Number(e.amount)||0;});
+  }
+  // 今月1日〜締日
+  for(let d=1;d<=lastDay;d++){
+    const key=dkey(curY,curM,d);
+    (S.cal[key]||[]).forEach(e=>{if(!e.kari)t+=Number(e.amount)||0;});
+  }
+  return {total:t,start:startDay+1,startM:prevM,end:lastDay};
+}
 function openGoal(){const gk=`${curY}-${curM}`;document.getElementById('goalIn').value=S.goals[gk]||'';document.getElementById('goalOv').classList.remove('hidden');}
 function closeGoal(){document.getElementById('goalOv').classList.add('hidden');}
 function saveGoal(){S.goals[`${curY}-${curM}`]=parseInt(document.getElementById('goalIn').value)||0;sv();rStats();closeGoal();}
