@@ -192,6 +192,8 @@ body.has-bg-img .bg-blob3,body.has-bg-img::before,body.has-bg-img::after{display
 .cal-white .chip-am{color:white!important;}
 .cal-day.closing-line{border-bottom:2px solid var(--accent);}
 .closing-line-row{grid-column:1/-1;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);border-radius:2px;margin:1px 0;}
+.cal-day.multi-sel{outline:2.5px solid var(--accent);outline-offset:-2px;background:var(--confirm-bg)!important;}
+.cal-day.multi-sel-del{outline:2.5px solid var(--danger);outline-offset:-2px;background:rgba(255,140,148,0.18)!important;}
 </style>
 </head>
 <body>
@@ -427,6 +429,18 @@ body.has-bg-img .bg-blob3,body.has-bg-img::before,body.has-bg-img::after{display
   </div>
 </div>
 
+<!-- 削除確認モーダル -->
+<div class="c-overlay hidden" id="delConfirmOv">
+  <div class="modal">
+    <div class="modal-ttl">🗑️ 削除の確認</div>
+    <div id="delConfirmMsg" style="text-align:center;font-size:13px;font-weight:700;color:var(--text);margin-bottom:16px;"></div>
+    <div style="display:flex;gap:8px;">
+      <button id="delConfirmCancelBtn" style="flex:1;background:none;border:1.5px solid #ccc;border-radius:12px;padding:11px;font-family:inherit;font-size:13px;font-weight:800;color:#aaa;cursor:pointer;">キャンセル</button>
+      <button id="delConfirmOkBtn" style="flex:1;background:var(--danger);border:none;border-radius:12px;padding:11px;font-family:inherit;font-size:13px;font-weight:800;color:white;cursor:pointer;">削除する</button>
+    </div>
+  </div>
+</div>
+
 <!-- 締日モーダル -->
 <div class="c-overlay hidden" id="closingOv">
   <div class="modal">
@@ -581,7 +595,9 @@ function bindEvents(){
     for(let i=0;i<60;i+=5)el.innerHTML+=`<option value="${i}">${String(i).padStart(2,'0')}</option>`;
   });
   document.getElementById('coWorkH').value=8;
-  document.getElementById('openClosingBtn').addEventListener('click',openClosing);
+  document.getElementById('delConfirmOkBtn').addEventListener('click',execMultiDel);
+  document.getElementById('delConfirmCancelBtn').addEventListener('click',()=>document.getElementById('delConfirmOv').classList.add('hidden'));
+  document.getElementById('delConfirmOv').addEventListener('click',e=>{if(e.target===document.getElementById('delConfirmOv'))document.getElementById('delConfirmOv').classList.add('hidden');});
   document.getElementById('closingRow').addEventListener('click',openClosing);
   document.getElementById('saveClosingBtn').addEventListener('click',saveClosing);
   document.getElementById('closingOffBtn').addEventListener('click',()=>{S.closingDay=0;sv();closeClosing();rStats();rCal();rCalMulti();});
@@ -688,12 +704,17 @@ function setMultiMode(mode){
 }
 function doMultiDel(){
   if(!multiSelDays.size){alert('削除する日付を選んでください');return;}
-  if(!confirm(`${multiSelDays.size}日分のシフトをすべて削除しますか？`))return;
+  // confirmの代わりに独自モーダル表示
+  document.getElementById('delConfirmMsg').textContent=`${multiSelDays.size}日分のシフトをすべて削除しますか？`;
+  document.getElementById('delConfirmOv').classList.remove('hidden');
+}
+function execMultiDel(){
   multiSelDays.forEach(d=>{
     const key=dkey(curY,curM,d);
     delete S.cal[key];
   });
   sv();multiSelDays=new Set();rCal();rCalMulti();rStats();updateMultiCount();
+  document.getElementById('delConfirmOv').classList.add('hidden');
 }
 function rCalMulti(){
   const w=document.getElementById('calDaysMulti');w.innerHTML='';
@@ -708,7 +729,7 @@ function rCalMulti(){
     const el=document.createElement('div');
     let cls=`cal-day ${col===0||isHol?'col-sun':col===6?'col-sat':'col-wd'}`;
     if(isT)cls+=' today';else if(hc&&hk)cls+=' has-ck';else if(hc)cls+=' has-c';else if(hk)cls+=' has-k';
-    if(multiSelDays.has(d))cls+=' multi-sel';
+    if(multiSelDays.has(d))cls+=multiMode==='del'?' multi-sel-del':' multi-sel';
     el.className=cls;
     let html=`<span class="day-num">${d}</span>`;
     if(hols[d])html+=`<span class="hol-badge">${hols[d]}</span>`;
@@ -724,14 +745,12 @@ function rCalMulti(){
     el.innerHTML=html;
     el.addEventListener('click',()=>{
       if(multiMode==='del'){
-        // 削除モード：入力済みの日だけ選択可
         if(!ents.length)return;
-        if(multiSelDays.has(d)){multiSelDays.delete(d);el.classList.remove('multi-sel');}
-        else{multiSelDays.add(d);el.classList.add('multi-sel');}
+        if(multiSelDays.has(d)){multiSelDays.delete(d);el.classList.remove('multi-sel-del');}
+        else{multiSelDays.add(d);el.classList.add('multi-sel-del');}
         updateMultiCount();
         return;
       }
-      // 追加モード：入力済みの日はタップで修正シート
       if(ents.length>0){openDay(d);return;}
       if(multiSelDays.has(d)){multiSelDays.delete(d);el.classList.remove('multi-sel');}
       else{multiSelDays.add(d);el.classList.add('multi-sel');}
